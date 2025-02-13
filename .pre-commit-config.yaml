@@ -61,6 +61,7 @@ repos:
            FI10,FI11,FI12,FI13,FI14,FI15,FI16,FI17,FI18,FI58,
            PT013,
            S101,
+           S404,
            T000,T101,
            W503",
            "--extend-immutable-calls=fastapi.Depends,fastapi.params.Depends,Depends",

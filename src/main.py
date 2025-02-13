@@ -1,12 +1,13 @@
 import logging
 
+from update_fields import update_fields
+
 logger = logging.getLogger(__name__)
 
 
 def main() -> None:
-    pass
+    update_fields("samples/input.docx")
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == "__main__":
     main()
