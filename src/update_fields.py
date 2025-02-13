@@ -34,22 +34,52 @@ def _make_backup(file_path: Path) -> Path:
     return backup_path
 
 
+def _win_find_word_app() -> str:
+    import winreg
+
+    try:
+        with winreg.OpenKey(
+            winreg.HKEY_LOCAL_MACHINE,
+            r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\WINWORD.EXE",
+        ) as key:
+            word_path, _ = winreg.QueryValueEx(key, "")
+            return word_path
+    except FileNotFoundError:
+        pass
+
+    return "winword"
+
+
 def _win(file_path: str) -> None:
+    import comtypes.client
+
     cleared_file_path = _file_check(file_path)
     _make_backup(cleared_file_path)
 
-    # Запуск Microsoft Word в фоновом режиме для обновления полей
-    word_path = shutil.which("winword")
-    if not word_path:
-        raise DocxUpdateFieldException("Не удалось найти Microsoft Word в системе")
-
+    word = comtypes.client.CreateObject("Word.Application")
+    doc = word.Documents.Open(str(cleared_file_path).replace("/", "\\"))  # TODO smell
+    word.ActiveWindow.View.ShowFieldCodes = False
+    doc.Repaginate()
+    doc.Fields.Update()
+    doc.Save()
+    word.Quit()
+    #
+    """
     try:
-        command = [word_path, file_path, "/mFilePrintDefault", "/q"]
+        command = [
+            _win_find_word(),
+            file_path,
+            "/mFilePrintDefault",
+            "/mFileSave",
+            "/mFileExit",
+            "/q",
+        ]
         subprocess.run(command, check=True, shell=False)  # noqa
         logger.info("Поля обновлены успешно.")
 
     except subprocess.CalledProcessError as e:
         logger.error(f"Ошибка при обновлении полей: {e}")
+    """
 
 
 def _linux(file_path: str) -> None:
