@@ -57,31 +57,25 @@ def _win(file_path: str) -> None:
     _make_backup(cleared_file_path)
 
     # TODO добавить проверку на то, что файл уже открыт
-    
+
     word = comtypes.client.CreateObject("Word.Application")
-    doc = word.Documents.Open(str(cleared_file_path).replace("/", "\\"))  # TODO smell
+
+    doc = word.Documents.Open(
+        FileName=str(cleared_file_path),
+        ConfirmConversions=False,
+        ReadOnly=False,
+        AddToRecentFiles=False,
+        PasswordDocument="",
+        PasswordTemplate="",
+        Revert=False,  # если уже открыт, то правим открытый
+        NoEncodingDialog=True,
+        OpenAndRepair=False,
+    )
     word.ActiveWindow.View.ShowFieldCodes = False
     doc.Repaginate()
     doc.Fields.Update()
     doc.Save()
     word.Quit()
-    #
-    """
-    try:
-        command = [
-            _win_find_word(),
-            file_path,
-            "/mFilePrintDefault",
-            "/mFileSave",
-            "/mFileExit",
-            "/q",
-        ]
-        subprocess.run(command, check=True, shell=False)  # noqa
-        logger.info("Поля обновлены успешно.")
-
-    except subprocess.CalledProcessError as e:
-        logger.error(f"Ошибка при обновлении полей: {e}")
-    """
 
 
 def _linux(file_path: str) -> None:
