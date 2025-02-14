@@ -56,6 +56,8 @@ def _win(file_path: str) -> None:
     cleared_file_path = _file_check(file_path)
     _make_backup(cleared_file_path)
 
+    # TODO добавить проверку на то, что файл уже открыт
+    
     word = comtypes.client.CreateObject("Word.Application")
     doc = word.Documents.Open(str(cleared_file_path).replace("/", "\\"))  # TODO smell
     word.ActiveWindow.View.ShowFieldCodes = False
