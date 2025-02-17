@@ -52,31 +52,50 @@ def _win_find_word_app() -> str:
 
 
 def _win(file_path: str) -> None:
-    import comtypes.client
+    import win32com.client
+    import pywintypes
 
     cleared_file_path = _file_check(file_path)
     _make_backup(cleared_file_path)
 
-    # TODO добавить проверку на то, что файл уже открыт
+    fin_actions = []
+    doc = None
+    try:
+        word = win32com.client.GetObject(Class="Word.Application")
+        logger.info("Найден запущенный экземпляр Word")
+        # Ищем открыт ли наш документ
+        for opened_doc in word.Documents:
+            if opened_doc.FullName.lower() == str(cleared_file_path).lower():
+                logger.info(f"Документ '{cleared_file_path}' уже открыт!")
+                doc = opened_doc
+                break
+    except (pywintypes.com_error, AttributeError):
+        word = win32com.client.Dispatch("Word.Application")
+        doc = None
+        logger.info("Запускаем новый экземпляр Word")
+        fin_actions.append(word.Quit)
 
-    word = comtypes.client.CreateObject("Word.Application")
+    if doc is None:
+        doc = word.Documents.Open(
+            FileName=str(cleared_file_path),
+            ConfirmConversions=False,
+            ReadOnly=False,
+            AddToRecentFiles=False,
+            PasswordDocument="",
+            PasswordTemplate="",
+            Revert=False,  # если уже открыт, то правим открытый
+            NoEncodingDialog=True,
+            OpenAndRepair=False,
+        )
+        fin_actions.append(doc.Close)
+        fin_actions.append(doc.Save)
 
-    doc = word.Documents.Open(
-        FileName=str(cleared_file_path),
-        ConfirmConversions=False,
-        ReadOnly=False,
-        AddToRecentFiles=False,
-        PasswordDocument="",
-        PasswordTemplate="",
-        Revert=False,  # если уже открыт, то правим открытый
-        NoEncodingDialog=True,
-        OpenAndRepair=False,
-    )
     word.ActiveWindow.View.ShowFieldCodes = False
     doc.Repaginate()
     doc.Fields.Update()
-    doc.Save()
-    word.Quit()
+
+    while fin_actions:
+        fin_actions.pop()()
 
 
 def _linux(file_path: str) -> None:
