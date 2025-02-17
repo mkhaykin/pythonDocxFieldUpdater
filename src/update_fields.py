@@ -29,7 +29,7 @@ def _file_check(file_path: str) -> Path:
 
 
 def _make_backup(file_path: Path) -> Path:
-    backup_path = file_path.with_stem(file_path.stem + "_backup")
+    backup_path = file_path.with_name(f"{file_path.stem}_backup{file_path.suffix}")
     shutil.copy2(file_path, backup_path)
     logger.info("Резервная копия сделана.")
     return backup_path
