@@ -6,7 +6,9 @@ from tkinter import filedialog
 
 from update_fields import update_fields
 
+logging.basicConfig()
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 FILENAME = (
     "..\\samples\\input.docx" if sys.platform == "win32" else "../samples/input.docx"
