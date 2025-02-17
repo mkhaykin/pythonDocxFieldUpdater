@@ -25,7 +25,6 @@ def _select_file() -> str:
 
 def main() -> None:
     source_file: str = os.path.abspath(FILENAME)
-
     if not os.path.exists(source_file):
         source_file = _select_file()
 
